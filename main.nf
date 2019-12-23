@@ -4,7 +4,8 @@ PRED_LABELS_DIR = Channel.fromPath(params.input_dir).first()
 REF_LABELS_FILE = Channel.fromPath(params.ref_labels_file).first()
 
 process get_tool_performance_table {
-    conda 'envs/{my_package}'
+    publishDir "${params.results_dir}", mode: 'copy'
+    conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
         file(pred_labels_dir) from PRED_LABELS_DIR
         file(ref_labels_file) from REF_LABELS_FILE
@@ -16,13 +17,14 @@ process get_tool_performance_table {
     get_tool_performance_table.R\
                  --input-dir ${pred_labels_dir}\
                  --ref-file ${ref_labels_file}\
+                 --ontology-graph ${params.ontology_graph}\
                  --output-path ${params.tool_perf_table}
     """
 }
 
 
 process generate_empirical_cdf {
-    conda 'envs/{my_package}'
+    conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
         file(ref_labels_file) from REF_LABELS_FILE
 
@@ -34,12 +36,14 @@ process generate_empirical_cdf {
             --input-ref-file ${ref_labels_file}\
             --num-iterations ${params.num_iter}\
             --num-cores ${params.num_cores}\
+            --ontology-graph ${params.ontology_graph}\
             --output-path ${params.empirical_dist}
     """
 }
 
 process get_pvals {
-     conda 'envs/{my_package}'
+    publishDir "${params.results_dir}", mode: 'copy'
+     conda "${baseDir}/envs/cell_types_analysis.yaml"
      input:
         file(tool_perf_table) from TOOL_PERF_TABLE
         file(emp_distr) from EMP_DISTRIBUTION
@@ -56,7 +60,8 @@ process get_pvals {
 }
 
 process get_per_cell_stats {
-    conda 'envs/{my_package}'
+    publishDir "${params.results_dir}", mode: 'copy'
+    conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
         file(input_dir) from PRED_LABELS_DIR
         file(ref_labels_file) from REF_LABELS_FILE
@@ -69,6 +74,7 @@ process get_per_cell_stats {
     get_cell_annotations_table.R\
         --input-dir ${input_dir}\
         --ref-file ${ref_labels_file}\
+        --ontology-graph ${params.ontology_graph}\
         --tool-table ${tool_table}\
         --output-path ${params.cell_anno_table}
     """
