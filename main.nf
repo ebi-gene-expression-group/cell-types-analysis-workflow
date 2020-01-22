@@ -18,6 +18,10 @@ process get_tool_performance_table {
                  --input-dir ${pred_labels_dir}\
                  --ref-file ${ref_labels_file}\
                  --ontology-graph ${params.ontology_graph}\
+                 --cell-ontology-col ${params.cell_ontology_col}\
+                 --barcode-col-ref ${params.barcode_col_ref}\
+                 --label-column-ref ${params.label_column_ref}\
+                 --semantic-sim-metric ${params.semantic_sim_metric}\
                  --output-path ${params.tool_perf_table}
     """
 }
@@ -35,6 +39,9 @@ process generate_empirical_cdf {
     get_empirical_dist.R\
             --input-ref-file ${ref_labels_file}\
             --num-iterations ${params.num_iter}\
+            --label-column-ref ${params.label_column_ref}\
+            --cell-ontology-col ${params.cell_ontology_col}\
+            --semantic-sim-metric ${params.semantic_sim_metric}\
             --num-cores ${params.num_cores}\
             --ontology-graph ${params.ontology_graph}\
             --output-path ${params.empirical_dist}
@@ -75,12 +82,11 @@ process get_per_cell_stats {
         --input-dir ${input_dir}\
         --ref-file ${ref_labels_file}\
         --ontology-graph ${params.ontology_graph}\
+        --cell-ontology-col ${params.cell_ontology_col}\
+        --semantic-sim-metric ${params.semantic_sim_metric}\
+        --label-column-ref ${params.label_column_ref}\
         --tool-table ${tool_table}\
+        --barcode-col-ref ${params.barcode_col_ref}\
         --output-path ${params.cell_anno_table}
     """
 }
-
-
-
-
-
