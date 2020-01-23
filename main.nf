@@ -3,12 +3,29 @@
 PRED_LABELS_DIR = Channel.fromPath(params.input_dir).first()
 REF_LABELS_FILE = Channel.fromPath(params.ref_labels_file).first()
 
+process remove_tech_duplicates {
+    publishDir "${params.results_dir}", mode: 'copy'
+    conda "${baseDir}/envs/cell_types_analysis.yaml"
+    input:
+        file(ref_labels_file) from REF_LABELS_FILE
+    output:
+        file("metadata_filtered.tsv") into REF_LABELS_FILTERED
+
+    """
+    remove_tech_duplicates.R\
+                --input-metadata ${ref_labels_file}\
+                --cell-id-column ${params.barcode_col_ref}\
+                --output-file metadata_filtered.tsv
+    """
+}
+
+
 process get_tool_performance_table {
     publishDir "${params.results_dir}", mode: 'copy'
     conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
         file(pred_labels_dir) from PRED_LABELS_DIR
-        file(ref_labels_file) from REF_LABELS_FILE
+        file(ref_labels_file) from REF_LABELS_FILTERED
 
     output:
         file("${params.tool_perf_table}") into TOOL_PERF_TABLE
@@ -30,7 +47,7 @@ process get_tool_performance_table {
 process generate_empirical_cdf {
     conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
-        file(ref_labels_file) from REF_LABELS_FILE
+        file(ref_labels_file) from REF_LABELS_FILTERED
 
     output: 
         file("${params.empirical_dist}") into EMP_DISTRIBUTION
@@ -71,7 +88,7 @@ process get_per_cell_stats {
     conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
         file(input_dir) from PRED_LABELS_DIR
-        file(ref_labels_file) from REF_LABELS_FILE
+        file(ref_labels_file) from REF_LABELS_FILTERED
         file(tool_table) from TOOL_TABLE_PVALS
 
     output:
