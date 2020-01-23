@@ -1,4 +1,6 @@
 #!/usr/bin/env Rscript 
+suppressPackageStartupMessages(require(optparse))
+suppressPackageStartupMessages(require(workflowscriptscommon))
 
 option_list = list(
     make_option(
