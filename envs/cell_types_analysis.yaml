@@ -6,3 +6,4 @@ channels:
   - ebi-gene-expression-group
 dependencies:
   - cell-types-analysis=0.0.3
+  
