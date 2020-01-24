@@ -43,7 +43,6 @@ process get_tool_performance_table {
     """
 }
 
-
 process generate_empirical_cdf {
     conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:

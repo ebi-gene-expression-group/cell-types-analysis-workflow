@@ -26,8 +26,8 @@ option_list = list(
     )
 )
 
-opt = wsc_parse_options(option_list, mandatory = c("input_metadata", "output_file"))
-metadata = read.table(opt$input_sdrf, sep = "\t", header = TRUE)
+opt = wsc_parse_args(option_list, mandatory = c("input_metadata", "output_file"))
+metadata = read.table(opt$input_metadata, sep = "\t", header = TRUE)
 # remove technical duplicate rows
 metadata = metadata[which(!duplicated(metadata[, opt$cell_id_column])), ]
 # write metadata file
