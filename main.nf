@@ -82,27 +82,3 @@ process get_pvals {
      """
 }
 
-process get_per_cell_stats {
-    publishDir "${params.results_dir}", mode: 'copy'
-    conda "${baseDir}/envs/cell_types_analysis.yaml"
-    input:
-        file(input_dir) from PRED_LABELS_DIR
-        file(ref_labels_file) from REF_LABELS_FILTERED
-        file(tool_table) from TOOL_TABLE_PVALS
-
-    output:
-        file("${params.cell_anno_table}") into CELL_ANNO_TABLE
-
-    """
-    get_cell_annotations_table.R\
-        --input-dir ${input_dir}\
-        --ref-file ${ref_labels_file}\
-        --ontology-graph ${params.ontology_graph}\
-        --cell-ontology-col ${params.cell_ontology_col}\
-        --semantic-sim-metric ${params.semantic_sim_metric}\
-        --label-column-ref ${params.label_column_ref}\
-        --tool-table ${tool_table}\
-        --barcode-col-ref ${params.barcode_col_ref}\
-        --output-path ${params.cell_anno_table}
-    """
-}
