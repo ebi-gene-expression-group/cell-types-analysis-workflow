@@ -11,7 +11,7 @@ option_list = list(
         help = "Metadata file containing technical replicates"
     ),
     make_option(
-        c("-c", "--cell-id-column"),
+        c("-c", "--barcode-col-ref"),
         action = "store",
         default = "cell_id",
         type = 'character',
@@ -29,6 +29,6 @@ option_list = list(
 opt = wsc_parse_args(option_list, mandatory = c("input_metadata", "output_file"))
 metadata = read.table(opt$input_metadata, sep = "\t", header = TRUE)
 # remove technical duplicate rows
-metadata = metadata[which(!duplicated(metadata[, opt$cell_id_column])), ]
+metadata = metadata[which(!duplicated(metadata[, opt$barcode_col_ref])), ]
 # write metadata file
 write.table(metadata, file = opt$output_file, sep = "\t", row.names = FALSE)

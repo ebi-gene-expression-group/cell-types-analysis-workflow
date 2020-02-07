@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow 
 
-PRED_LABELS_DIR = Channel.fromPath(params.input_dir).first()
-REF_LABELS_FILE = Channel.fromPath(params.ref_labels_file).first()
+PRED_LABELS_DIR = Channel.fromPath(params.input_dir)
+REF_LABELS_FILE = Channel.fromPath(params.ref_labels_file)
 
 process remove_tech_duplicates {
     publishDir "${params.results_dir}", mode: 'copy'
@@ -14,7 +14,7 @@ process remove_tech_duplicates {
     """
     remove_tech_duplicates.R\
                 --input-metadata ${ref_labels_file}\
-                --cell-id-column ${params.barcode_col_ref}\
+                --barcode-col-ref ${params.barcode_col_ref}\
                 --output-file metadata_filtered.tsv
     """
 }
