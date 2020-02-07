@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow 
 
-PRED_LABELS_DIR = Channel.fromPath(params.input_dir)
-REF_LABELS_FILE = Channel.fromPath(params.ref_labels_file)
+PRED_LABELS_DIR = Channel.fromPath(params.input_dir).first()
+REF_LABELS_FILE = Channel.fromPath(params.ref_labels_file).first()
 
 process remove_tech_duplicates {
     publishDir "${params.results_dir}", mode: 'copy'
