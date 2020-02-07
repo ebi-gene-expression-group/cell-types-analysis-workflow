@@ -38,6 +38,7 @@ process get_tool_performance_table {
                  --cell-ontology-col ${params.cell_ontology_col}\
                  --barcode-col-ref ${params.barcode_col_ref}\
                  --label-column-ref ${params.label_column_ref}\
+                 --label-column-pred ${params.label_column_pred}\
                  --semantic-sim-metric ${params.semantic_sim_metric}\
                  --output-path ${params.tool_perf_table}
     """
