@@ -4,7 +4,7 @@ PRED_LABELS_DIR = Channel.fromPath(params.input_dir).first()
 REF_LABELS_FILE = Channel.fromPath(params.ref_labels_file).first()
 
 process remove_tech_duplicates {
-    publishDir "${params.results_dir}", mode: 'copy'
+    publishDir "${params.metadata_dir}", mode: 'copy'
     conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
         file(ref_labels_file) from REF_LABELS_FILE
@@ -19,6 +19,25 @@ process remove_tech_duplicates {
     """
 }
 
+process build_cell_ontology_dict{
+    publishDir "${params.results_dir}", mode: 'copy'
+    conda "${baseDir}/envs/cell_types_analysis.yaml"
+    input:
+        file("metadata_filtered.tsv") from REF_LABELS_FILTERED
+    output: 
+        file("${params.ontology_dict}") into ONTOLOGY_DICT
+
+    """
+    build_cell_ontology_dict.R\
+    	--input-dir ${params.metadata_dir}\
+	--condensed-sdrf ${params.condensed_sdrf}\
+	--barcode-col-name ${params.barcode_col_ref}\
+	--cell-label-col-name ${params.label_column_ref}\
+	--cell-ontology-col-name ${params.cell_ontology_col}\
+	--output-dict-path ${params.ontology_dict}\
+	--output-text-path ${params.ontology_table}
+    """
+}
 
 process get_tool_performance_table {
     publishDir "${params.results_dir}", mode: 'copy'
@@ -26,7 +45,7 @@ process get_tool_performance_table {
     input:
         file(pred_labels_dir) from PRED_LABELS_DIR
         file(ref_labels_file) from REF_LABELS_FILTERED
-
+        file(ontology_dict) from ONTOLOGY_DICT
     output:
         file("${params.tool_perf_table}") into TOOL_PERF_TABLE
 
@@ -34,9 +53,10 @@ process get_tool_performance_table {
     get_tool_performance_table.R\
                  --input-dir ${pred_labels_dir}\
                  --ref-file ${ref_labels_file}\
+                 --lab-cl-mapping ${ontology_dict}\
                  --ontology-graph ${params.ontology_graph}\
-                 --cell-ontology-col ${params.cell_ontology_col}\
                  --barcode-col-ref ${params.barcode_col_ref}\
+                 --barcode-col-pred ${params.barcode_col_pred}\
                  --label-column-ref ${params.label_column_ref}\
                  --label-column-pred ${params.label_column_pred}\
                  --semantic-sim-metric ${params.semantic_sim_metric}\
@@ -48,6 +68,7 @@ process generate_empirical_cdf {
     conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
         file(ref_labels_file) from REF_LABELS_FILTERED
+	file(ontology_dict) from ONTOLOGY_DICT
 
     output: 
         file("${params.empirical_dist}") into EMP_DISTRIBUTION
@@ -55,12 +76,12 @@ process generate_empirical_cdf {
     """
     get_empirical_dist.R\
             --input-ref-file ${ref_labels_file}\
-            --num-iterations ${params.num_iter}\
             --label-column-ref ${params.label_column_ref}\
-            --cell-ontology-col ${params.cell_ontology_col}\
-            --semantic-sim-metric ${params.semantic_sim_metric}\
+            --lab-cl-mapping ${ontology_dict}\
+            --num-iterations ${params.num_iter}\
             --num-cores ${params.num_cores}\
-            --ontology-graph ${params.ontology_graph}\
+	    --ontology-graph ${params.ontology_graph}\
+            --semantic-sim-metric ${params.semantic_sim_metric}\
             --output-path ${params.empirical_dist}
     """
 }
@@ -82,4 +103,3 @@ process get_pvals {
              --output-table ${params.tool_table_pvals}
      """
 }
-
