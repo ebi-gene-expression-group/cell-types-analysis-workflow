@@ -5,18 +5,21 @@ REF_LABELS_FILE = Channel.fromPath(params.ref_labels_file).first()
 ONTOLOGY_GRAPH = Channel.fromPath(params.ontology_graph).first()
 
 process remove_tech_duplicates {
-    publishDir "${params.metadata_filt_dir}", mode: 'copy'
+    publishDir "${params.results_dir}", mode: 'copy'
     conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
         file(ref_labels_file) from REF_LABELS_FILE
     output:
         file("metadata_filtered.tsv") into REF_LABELS_FILTERED
-
+	file('metadata_filt') into REF_LABELS_FILTERED_DIR
     """
     remove_tech_duplicates.R\
                 --input-metadata ${ref_labels_file}\
                 --barcode-col-ref ${params.barcode_col_ref}\
                 --output-file metadata_filtered.tsv
+    
+    mkdir -p metadata_filt/
+    cp metadata_filtered.tsv metadata_filt 
     """
 }
 
@@ -24,13 +27,13 @@ process build_cell_ontology_dict{
     publishDir "${params.results_dir}", mode: 'copy'
     conda "${baseDir}/envs/cell_types_analysis.yaml"
     input:
-        file(ref_labels_file) from REF_LABELS_FILTERED
+	file('metadata_filt') from REF_LABELS_FILTERED_DIR
     output: 
         file("${params.ontology_dict}") into ONTOLOGY_DICT
 
     """
     build_cell_ontology_dict.R\
-    	--input-dir ${params.metadata_filt_dir}\
+    	--input-dir ${metadata_filt}\
 	--condensed-sdrf ${params.condensed_sdrf}\
 	--barcode-col-name ${params.barcode_col_ref}\
 	--cell-label-col-name ${params.label_column_ref}\
